@@ -34,7 +34,7 @@ async function bootstrap() {
   // Global exception filter
   app.useGlobalFilters(new HttpExceptionFilter());
 
-  await app.listen(appConfig.port);
+    await app.listen(appConfig.port, '0.0.0.0');
   console.log(`Application is running on: http://localhost:${appConfig.port}`);
   console.log(`API Prefix: ${appConfig.apiPrefix}`);
 }
