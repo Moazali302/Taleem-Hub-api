@@ -2,7 +2,7 @@ import { Controller, Get, Post, Body, Param, Patch, UseGuards, Res } from '@nest
 import { ResultsService } from './results.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { TenantGuard } from '../../common/guards/tenant.guard';
-import { Response } from 'express';
+import type { Response } from 'express';
 
 @Controller('results')
 @UseGuards(JwtAuthGuard, TenantGuard)

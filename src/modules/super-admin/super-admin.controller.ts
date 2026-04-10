@@ -6,7 +6,7 @@ import { Roles } from '../../common/decorators/roles.decorator';
 
 @Controller('super-admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
-@Roles('super_admin')
+@Roles('superadmin')
 export class SuperAdminController {
   constructor(private readonly superAdminService: SuperAdminService) {}
 

@@ -1,12 +1,11 @@
 import { Module } from '@nestjs/common';
+import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
-import { ConfigModule } from '@nestjs/config';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
-import { databaseConfig } from './config/database.config';
 
-// Modules
 import { AuthModule } from './modules/auth/auth.module';
+import { MailModule } from './modules/mail/mail.module';
 import { SchoolsModule } from './modules/schools/schools.module';
 import { StudentsModule } from './modules/students/students.module';
 import { TeachersModule } from './modules/teachers/teachers.module';
@@ -23,7 +22,6 @@ import { NotificationsModule } from './modules/notifications/notifications.modul
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { SuperAdminModule } from './modules/super-admin/super-admin.module';
 
-// Entities
 import { School } from './database/entities/school.entity';
 import { User } from './database/entities/user.entity';
 import { Student } from './database/entities/student.entity';
@@ -45,27 +43,41 @@ import { NotificationLog } from './database/entities/notification-log.entity';
   imports: [
     ConfigModule.forRoot({
       isGlobal: true,
-      envFilePath: '.env',
+      envFilePath: ['.env', 'src/.env'],
     }),
-    TypeOrmModule.forRoot(databaseConfig()),
-    TypeOrmModule.forFeature([
-      School,
-      User,
-      Student,
-      Class,
-      Timetable,
-      StudentAttendance,
-      TeacherAttendance,
-      Fee,
-      Exam,
-      Result,
-      Complaint,
-      LeaveRequest,
-      Announcement,
-      Subscription,
-      AuditLog,
-      NotificationLog,
-    ]),
+    TypeOrmModule.forRootAsync({
+      imports: [ConfigModule],
+      inject: [ConfigService],
+      useFactory: (config: ConfigService) => ({
+        type: 'postgres' as const,
+        host: config.getOrThrow<string>('DATABASE_HOST'),
+        port: parseInt(config.getOrThrow<string>('DATABASE_PORT'), 10),
+        username: config.getOrThrow<string>('DATABASE_USER'),
+        password: config.getOrThrow<string>('DATABASE_PASS'),
+        database: config.getOrThrow<string>('DATABASE_NAME'),
+        entities: [
+          School,
+          User,
+          Student,
+          Class,
+          Timetable,
+          StudentAttendance,
+          TeacherAttendance,
+          Fee,
+          Exam,
+          Result,
+          Complaint,
+          LeaveRequest,
+          Announcement,
+          Subscription,
+          AuditLog,
+          NotificationLog,
+        ],
+        synchronize: config.get<string>('NODE_ENV') !== 'production',
+        logging: config.get<string>('NODE_ENV') === 'development',
+      }),
+    }),
+    MailModule,
     AuthModule,
     SchoolsModule,
     StudentsModule,
