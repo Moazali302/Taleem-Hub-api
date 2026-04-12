@@ -69,7 +69,6 @@ npm run start:dev
 
 ```env
 DATABASE_HOST=your_db_host
-
 FRONTEND_URL=http://localhost:4200
 BACKEND_URL=http://localhost:3000
 PORT=3000
