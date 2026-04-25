@@ -49,6 +49,7 @@ import { NotificationLog } from './database/entities/notification-log.entity';
       imports: [ConfigModule],
       inject: [ConfigService],
       useFactory: (config: ConfigService) => ({
+        // Keep schema changes explicit via migrations; auto-sync can drop/rename columns unexpectedly.
         type: 'postgres' as const,
         host: config.getOrThrow<string>('DATABASE_HOST'),
         port: parseInt(config.getOrThrow<string>('DATABASE_PORT'), 10),
@@ -73,7 +74,8 @@ import { NotificationLog } from './database/entities/notification-log.entity';
           AuditLog,
           NotificationLog,
         ],
-        synchronize: config.get<string>('NODE_ENV') !== 'production',
+        synchronize: config.get<string>('DB_SYNCHRONIZE', 'false') === 'true',
+        migrationsRun: config.get<string>('DB_MIGRATIONS_RUN', 'false') === 'true',
         logging: config.get<string>('NODE_ENV') === 'development',
       }),
     }),

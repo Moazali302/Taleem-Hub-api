@@ -13,49 +13,75 @@ import { School } from './school.entity';
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
-  id: string;
+  id!: string;
 
   @Column({ type: 'uuid' })
-  school_id: string;
+  school_id!: string;
 
   @ManyToOne(() => School)
   @JoinColumn({ name: 'school_id' })
-  school: School;
+  school!: School;
 
   @Column({ type: 'varchar', length: 255 })
-  name: string;
+  name!: string;
 
   @Column({ type: 'varchar', length: 255, unique: true })
-  email: string;
+  email!: string;
 
   @Column({ type: 'varchar', length: 20, nullable: true })
-  phone: string;
+  phone!: string;
 
   @Column({
     type: 'enum',
-    enum: ['super_admin', 'admin', 'teacher', 'staff', 'parent'],
+    enum: ['superadmin', 'admin', 'teacher', 'student'],
     default: 'admin',
   })
-  role: string;
+  role!: string;
 
-  @Column({ type: 'varchar', length: 255 })
-  password_hash: string;
+  @Column({ name: 'password', type: 'varchar', length: 255 })
+  password_hash!: string;
 
-  @Column({ type: 'boolean', default: false })
-  email_verified: boolean;
+  @Column({ name: 'isEmailVerified', type: 'boolean', default: false })
+  email_verified!: boolean;
 
   @Column({ type: 'varchar', length: 6, nullable: true })
-  otp: string;
+  otp!: string;
 
-  @Column({ type: 'timestamp', nullable: true })
-  otp_expires_at: Date;
+  @Column({ name: 'otpExpiry', type: 'timestamp', nullable: true })
+  otp_expires_at!: Date;
+
+  @Column({
+    name: 'refreshToken',
+    type: 'varchar',
+    length: 500,
+    nullable: true,
+  })
+  refresh_token!: string | null;
+
+  @Column({
+    name: 'resetPasswordToken',
+    type: 'varchar',
+    length: 255,
+    nullable: true,
+  })
+  reset_password_token!: string | null;
+
+  @Column({
+    name: 'resetPasswordTokenExpiry',
+    type: 'timestamp',
+    nullable: true,
+  })
+  reset_password_token_expiry!: Date | null;
+
+  @Column({ name: 'isActive', type: 'boolean', default: true })
+  is_active!: boolean;
 
   @DeleteDateColumn()
-  deleted_at: Date;
+  deleted_at!: Date;
 
-  @CreateDateColumn()
-  created_at: Date;
+  @CreateDateColumn({ name: 'createdAt' })
+  created_at!: Date;
 
-  @UpdateDateColumn()
-  updated_at: Date;
+  @UpdateDateColumn({ name: 'updatedAt' })
+  updated_at!: Date;
 }
