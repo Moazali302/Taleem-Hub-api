@@ -66,8 +66,7 @@ export const AuthMessages = {
   PASSWORD_RESET_OTP_EXPIRED: 'Password reset OTP has expired',
   PASSWORD_RESET_OTP_INVALID: 'Password reset OTP is invalid',
   PASSWORD_RESET_LINK_SENT: 'Password reset link sent to your email.',
-  PASSWORD_RESET_SUCCESS:
-    'Password reset successfully. You can now login.',
+  PASSWORD_RESET_SUCCESS:'Password reset successfully. You can now login.',
   LOGOUT_SUCCESS: 'Logged out successfully.',
   ALREADY_APPROVED: 'Already approved',
   ALREADY_REJECTED: 'Already rejected',
