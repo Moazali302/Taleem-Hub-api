@@ -357,20 +357,21 @@ export class AuthService {
     school.otp_expires_at = this.getOtpExpiryDate();
     await this.schoolRepository.save(school);
 
-    const frontend = this.configService
-      .getOrThrow<string>('FRONTEND_URL')
-      .replace(/\/$/, '');
-    const resetUrl = `${frontend}/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
+
+    // const frontend = this.configService
+    //   .getOrThrow<string>('FRONTEND_URL')
+    //   .replace(/\/$/, '');
+    // const resetUrl = `${frontend}/reset-password?email=${encodeURIComponent(email)}&otp=${encodeURIComponent(otp)}`;
 
     await this.mailService.sendForgotPasswordEmail({
       to: school.email,
       ownerName: school.owner_name,
-      resetUrl,
+      otp,
     });
 
     return {
       success: true,
-      message: AuthMessages.PASSWORD_RESET_LINK_SENT,
+      message: AuthMessages.PASSWORD_RESET_OTP_SENT,
     };
   }
 

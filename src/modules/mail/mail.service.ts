@@ -225,20 +225,21 @@ export class MailService {
   async sendForgotPasswordEmail(params: {
     to: string;
     ownerName: string;
-    resetUrl: string;
+    otp: string;  // ← resetUrl ki jagah otp
   }): Promise<void> {
     const inner = `
       <p style="margin:0 0 16px;">Dear ${this.escapeHtml(params.ownerName)},</p>
-      <p style="margin:0 0 16px;">Click the button below to reset your Taleem Hub password. This link is valid for 5 minutes only.</p>
-      <p style="margin:24px 0;">
-        <a href="${this.escapeAttr(params.resetUrl)}" style="display:inline-block;padding:14px 28px;background:#0d9488;color:#ffffff;text-decoration:none;border-radius:8px;font-weight:700;">Reset password</a>
-      </p>
-      <p style="margin:0;font-size:12px;color:#94a3b8;word-break:break-all;">If the button does not work, copy this link: ${this.escapeHtml(params.resetUrl)}</p>
+      <p style="margin:0 0 16px;">We received a request to reset your Taleem Hub password. Use the OTP below to proceed:</p>
+      <div style="margin:24px 0;text-align:center;">
+        <span style="display:inline-block;padding:16px 32px;background:#f1f5f9;border-radius:12px;font-size:32px;font-weight:700;letter-spacing:10px;color:#0d9488;">${this.escapeHtml(params.otp)}</span>
+      </div>
+      <p style="margin:0 0 16px;color:#64748b;font-size:14px;">This OTP is valid for <strong>5 minutes</strong> only. Do not share it with anyone.</p>
+      <p style="margin:0;color:#64748b;font-size:14px;">If you did not request a password reset, please ignore this email or contact us at <a href="mailto:taleemhub2026@gmail.com" style="color:#0d9488;">taleemhub2026@gmail.com</a>.</p>
     `;
     await this.sendHtmlMail(
       params.to,
       MailSubjects.FORGOT_PASSWORD,
-      this.wrapBrandedHtml('Password Reset', inner),
+      this.wrapBrandedHtml('Password Reset OTP', inner),
     );
   }
 
