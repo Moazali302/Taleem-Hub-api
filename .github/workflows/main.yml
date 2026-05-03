@@ -14,9 +14,6 @@ jobs:
   ci:
     name: Lint, Test & Build
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: Taleem-Hub-api/Taleem-Hub-api
 
     env:
       NODE_ENV: test
@@ -39,12 +36,16 @@ jobs:
 
       - name: Install dependencies
         run: npm ci
+        working-directory: Taleem-Hub-api
 
       - name: Run linter
         run: npm run lint
+        working-directory: Taleem-Hub-api
 
       - name: Run unit tests
         run: npm run test -- --ci
+        working-directory: Taleem-Hub-api
 
       - name: Build
         run: npm run build
+        working-directory: Taleem-Hub-api
