@@ -1,10 +1,10 @@
-name: Backend CI
+name: main.yml
 
 on:
   push:
-    branches: ['**']  # ← har branch
+    branches: ['**']
   pull_request:
-    branches: ['**']  # ← har PR
+    branches: ['**']
 
 concurrency:
   group: backend-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -18,6 +18,16 @@ jobs:
       run:
         working-directory: Taleem-Hub-api
 
+    env:
+      NODE_ENV: test
+      DATABASE_URL: ${{ secrets.DATABASE_URL }}
+      JWT_SECRET: ${{ secrets.JWT_SECRET }}
+      MAIL_USER: ${{ secrets.MAIL_USER }}
+      MAIL_PASS: ${{ secrets.MAIL_PASS }}
+      FRONTEND_URL: http://localhost:4200
+      BACKEND_URL: http://localhost:3000
+      PORT: 3000
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
@@ -25,7 +35,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: "20"
+          node-version: '20'
           cache: npm
           cache-dependency-path: Taleem-Hub-api/package-lock.json
 
