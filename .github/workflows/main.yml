@@ -2,22 +2,21 @@ name: Backend CI
 
 on:
   push:
-    branches:
-      - main
-      - develop
+    branches: ['**']  # ← har branch
   pull_request:
-    branches:
-      - main
-      - develop
+    branches: ['**']  # ← har PR
 
 concurrency:
-  group: backend-ci-${{ github.workflow }}-${{ github.ref }}
+  group: backend-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
   cancel-in-progress: true
 
 jobs:
   ci:
     name: Lint, Test & Build
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: Taleem-Hub-api
 
     steps:
       - name: Checkout code
@@ -28,7 +27,7 @@ jobs:
         with:
           node-version: "20"
           cache: npm
-          cache-dependency-path: package-lock.json
+          cache-dependency-path: Taleem-Hub-api/package-lock.json
 
       - name: Install dependencies
         run: npm ci
