@@ -1,4 +1,4 @@
-name: main.yml
+name: Backend CI
 
 on:
   push:
@@ -36,8 +36,6 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: '20'
-          cache: npm
-          cache-dependency-path: Taleem-Hub-api/package-lock.json
 
       - name: Install dependencies
         run: npm ci
