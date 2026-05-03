@@ -16,7 +16,7 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: Taleem-Hub-api
+        working-directory: Taleem-Hub-api/Taleem-Hub-api
 
     env:
       NODE_ENV: test
