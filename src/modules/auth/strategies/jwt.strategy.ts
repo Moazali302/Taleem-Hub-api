@@ -32,7 +32,7 @@ export class JwtStrategy extends PassportStrategy(Strategy) {
     schoolId: string;
   } {
     return {
-      id: payload.sub,
+      id: payload.sub.toString(),
       email: payload.email,
       role: payload.role,
       schoolId: payload.schoolId,

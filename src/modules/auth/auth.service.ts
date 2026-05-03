@@ -62,7 +62,7 @@ export class AuthService {
     }
 
     const password_hash = await bcrypt.hash(dto.password, BCRYPT_SALT_ROUNDS);
-    const school_id = await this.generateUniqueBusinessSchoolId();
+    const school_id = await this.generateUniqueBusinessSchoolId(dto.schoolName);
 
     const school = this.schoolRepository.create({
       school_name: dto.schoolName.trim(),
@@ -433,7 +433,7 @@ export class AuthService {
    */
   private signAccessToken(school: School): string {
     const payload: TaleemJwtPayload = {
-      sub: school.id,
+      sub: school.id.toString(),
       email: school.email,
       role: school.role,
       schoolId: school.school_id,
@@ -469,24 +469,25 @@ export class AuthService {
   /**
    * Allocates a unique business school identifier in the form TH-{year}-XXXX.
    */
-  private async generateUniqueBusinessSchoolId(): Promise<string> {
-    const year = new Date().getFullYear();
-    const prefix = `TH-${year}-`;
-    for (let attempt = 0; attempt < 64; attempt++) {
-      let suffix = '';
-      for (let i = 0; i < 4; i++) {
-        const idx = randomInt(SCHOOL_ID_RANDOM_ALPHABET.length);
-        suffix += SCHOOL_ID_RANDOM_ALPHABET[idx];
-      }
-      const school_id = prefix + suffix;
+  private async generateUniqueBusinessSchoolId(schoolName: string): Promise<string> {
+    const baseSlug = schoolName
+      .toLowerCase()
+      .trim()
+      .replace(/[^a-z0-9\s-]/g, '')
+      .replace(/\s+/g, '-')
+      .replace(/-+/g, '-');
+  
+    let slug = baseSlug;
+    let counter = 1;
+  
+    while (true) {
       const taken = await this.schoolRepository.exist({
-        where: { school_id },
+        where: { school_id: slug },
       });
-      if (!taken) {
-        return school_id;
-      }
+      if (!taken) return slug;
+      slug = `${baseSlug}-${counter}`;
+      counter++;
     }
-    throw new InternalServerErrorException('Unable to assign a unique school ID');
   }
 
   /**

@@ -14,8 +14,8 @@ import {
 
 @Entity('schools')
 export class School {
-  @PrimaryGeneratedColumn('uuid')
-  id: string;
+  @PrimaryGeneratedColumn('increment')
+  id: number;
 
   @Column({ name: 'school_name', type: 'varchar', length: 255 })
   school_name: string;

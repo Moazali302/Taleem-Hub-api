@@ -12,11 +12,15 @@ import { School } from './school.entity';
 
 @Entity('users')
 export class User {
-  @PrimaryGeneratedColumn('uuid')
-  id!: string;
+  @PrimaryGeneratedColumn('increment')
+  id!: number;
 
-  @Column({ type: 'uuid' })
-  school_id!: string;
+  // @Column({ type: 'varchar', length: 255 })
+  // school_id!: string;
+
+  // @ManyToOne(() => School)
+  // @JoinColumn({ name: 'school_id' })
+  // school!: School;
 
   @ManyToOne(() => School)
   @JoinColumn({ name: 'school_id' })
