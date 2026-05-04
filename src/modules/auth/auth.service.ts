@@ -217,7 +217,9 @@ export class AuthService {
     if (!passwordOk) {
       throw new UnauthorizedException(AuthMessages.INVALID_CREDENTIALS);
     }
-
+    if (dto.schoolId !== school.school_id) {
+      throw new UnauthorizedException(AuthMessages.INVALID_SCHOOL_ID);
+    }
     if (school.status === SchoolStatusEnum.PENDING) {
       throw new ForbiddenException(AuthMessages.ACCOUNT_UNDER_REVIEW);
     }

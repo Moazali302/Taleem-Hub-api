@@ -71,6 +71,10 @@ export const AuthMessages = {
   ALREADY_APPROVED: 'Already approved',
   ALREADY_REJECTED: 'Already rejected',
   SCHOOL_NOT_FOUND: 'School not found',
+  SCHOOL_NOT_APPROVED: 'School not approved',
+  SCHOOL_NOT_REJECTED: 'School not rejected',
+  INVALID_SCHOOL_ID: 'Invalid school ID',
+  SCHOOL_ID_MISMATCH: 'School identifier does not match the authenticated session',
   FORBIDDEN_ROLE: 'You do not have permission to access this resource',
   TENANT_MISMATCH:
     'School identifier does not match the authenticated session',
