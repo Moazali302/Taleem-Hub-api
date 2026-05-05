@@ -17,6 +17,7 @@ import {
 } from '@nestjs/swagger';
 import type { Request, Response } from 'express';
 import { AuthService } from './auth.service';
+import { ResendOtpDto } from './dto/resend-otp.dto';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
@@ -58,7 +59,9 @@ export class AuthController {
 
   @Post('login')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Login with email/password; may return OTP requirement' })
+  @ApiOperation({
+    summary: 'Login with email/password; may return OTP requirement',
+  })
   @ApiResponse({ status: 200 })
   async login(@Body() loginDto: LoginDto, @Req() req: Request) {
     return this.authService.login(loginDto, req);
@@ -66,13 +69,21 @@ export class AuthController {
 
   @Post('verify-otp')
   @HttpCode(HttpStatus.OK)
-  @ApiOperation({ summary: 'Verify login OTP and receive JWT (also set as HTTP-only cookie)' })
+  @ApiOperation({
+    summary: 'Verify login OTP and receive JWT (also set as HTTP-only cookie)',
+  })
   @ApiResponse({ status: 200 })
   async verifyOtp(
     @Body() verifyOtpDto: VerifyOtpDto,
     @Res({ passthrough: true }) res: Response,
   ) {
     return this.authService.verifyOtp(verifyOtpDto, res);
+  }
+
+  @Post('resend-otp')
+  @HttpCode(HttpStatus.OK)
+  resendOtp(@Body() dto: ResendOtpDto) {
+    return this.authService.resendOtp(dto);
   }
 
   @Post('forgot-password')

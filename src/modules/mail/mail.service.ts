@@ -210,7 +210,7 @@ export class MailService {
       <p style="margin:0 0 16px;">Dear ${this.escapeHtml(params.ownerName)},</p>
       <p style="margin:0 0 16px;">Your One-Time Password is:</p>
       <p style="margin:0 0 24px;font-size:28px;letter-spacing:8px;font-weight:700;color:#0d9488;">${this.escapeHtml(params.otp)}</p>
-      <p style="margin:0 0 16px;color:#64748b;font-size:14px;">Valid for 5 minutes only. Do not share with anyone.</p>
+      <p style="margin:0 0 16px;color:#64748b;font-size:14px;">Valid for 2 minutes only. Do not share with anyone.</p>
     `;
     await this.sendHtmlMail(
       params.to,
@@ -225,7 +225,7 @@ export class MailService {
   async sendForgotPasswordEmail(params: {
     to: string;
     ownerName: string;
-    otp: string;  // ← resetUrl ki jagah otp
+    otp: string; 
   }): Promise<void> {
     const inner = `
       <p style="margin:0 0 16px;">Dear ${this.escapeHtml(params.ownerName)},</p>

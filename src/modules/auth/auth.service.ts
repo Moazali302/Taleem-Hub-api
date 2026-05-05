@@ -30,6 +30,7 @@ import { MailService } from '../mail/mail.service';
 import { RegisterDto } from './dto/register.dto';
 import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
+import { ResendOtpDto } from './dto/resend-otp.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
 import { TaleemJwtPayload } from './interfaces/jwt-payload.interface';
@@ -227,14 +228,15 @@ export class AuthService {
       throw new ForbiddenException(AuthMessages.ACCOUNT_REJECTED);
     }
 
-    const cookieToken = req.cookies?.[TALEEM_TOKEN_COOKIE] as string | undefined;
+    const cookieToken = req.cookies?.[TALEEM_TOKEN_COOKIE] as
+      | string
+      | undefined;
     if (cookieToken) {
       try {
         const secret = this.configService.getOrThrow<string>('JWT_SECRET');
-        const payload = this.jwtService.verify<TaleemJwtPayload>(
-          cookieToken,
-          { secret },
-        );
+        const payload = this.jwtService.verify<TaleemJwtPayload>(cookieToken, {
+          secret,
+        });
         if (payload.email === email) {
           const redirectTo = this.buildDashboardUrl(school.role);
           return {
@@ -340,10 +342,33 @@ export class AuthService {
       },
     };
   }
+  async resendOtp(
+    dto: ResendOtpDto,
+  ): Promise<{ success: boolean; message: string }> {
+    const email = dto.email.toLowerCase().trim();
 
-  /**
-   * Sends a time-bound OTP and reset link to the registered email for password recovery.
-   */
+    const school = await this.schoolRepository.findOne({ where: { email } });
+    if (!school) {
+      throw new NotFoundException(AuthMessages.USER_NOT_FOUND);
+    }
+
+    const otp = this.generateSixDigitOtp();
+    school.otp = otp;
+    school.otp_expires_at = this.getOtpExpiryDate(); // ← correct field name
+    await this.schoolRepository.save(school);
+
+    await this.mailService.sendLoginOtpEmail({
+      // ← correct method name
+      to: school.email,
+      ownerName: school.owner_name,
+      otp,
+    });
+
+    return {
+      success: true,
+      message: AuthMessages.OTP_SENT,
+    };
+  }
   async forgotPassword(dto: ForgotPasswordDto): Promise<{
     success: boolean;
     message: string;
@@ -358,7 +383,6 @@ export class AuthService {
     school.otp = otp;
     school.otp_expires_at = this.getOtpExpiryDate();
     await this.schoolRepository.save(school);
-
 
     // const frontend = this.configService
     //   .getOrThrow<string>('FRONTEND_URL')
@@ -377,9 +401,6 @@ export class AuthService {
     };
   }
 
-  /**
-   * Resets the password after OTP validation, clears OTP fields, and persists the new bcrypt hash.
-   */
   async resetPassword(dto: ResetPasswordDto): Promise<{
     success: boolean;
     message: string;
@@ -431,9 +452,8 @@ export class AuthService {
     };
   }
 
-  /**
-   * Creates a signed JWT for the given school record.
-   */
+  //  * Creates a signed JWT for the given school record.
+  //  */
   private signAccessToken(school: School): string {
     const payload: TaleemJwtPayload = {
       sub: school.id.toString(),
@@ -472,17 +492,19 @@ export class AuthService {
   /**
    * Allocates a unique business school identifier in the form TH-{year}-XXXX.
    */
-  private async generateUniqueBusinessSchoolId(schoolName: string): Promise<string> {
+  private async generateUniqueBusinessSchoolId(
+    schoolName: string,
+  ): Promise<string> {
     const baseSlug = schoolName
       .toLowerCase()
       .trim()
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-');
-  
+
     let slug = baseSlug;
     let counter = 1;
-  
+
     while (true) {
       const taken = await this.schoolRepository.exist({
         where: { school_id: slug },
