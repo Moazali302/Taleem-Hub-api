@@ -56,6 +56,9 @@ import { NotificationLog } from './database/entities/notification-log.entity';
         username: config.getOrThrow<string>('DATABASE_USER'),
         password: config.getOrThrow<string>('DATABASE_PASS'),
         database: config.getOrThrow<string>('DATABASE_NAME'),
+        ssl: {
+          rejectUnauthorized: false,
+        },
         entities: [
           School,
           User,
