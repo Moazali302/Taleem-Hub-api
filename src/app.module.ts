@@ -59,6 +59,13 @@ import { NotificationLog } from './database/entities/notification-log.entity';
         ssl: {
           rejectUnauthorized: false,
         },
+        extra: {
+          max: 10,
+          idleTimeoutMillis: 10000,
+          connectionTimeoutMillis: 3000,
+        },
+        poolSize: 10,
+        connectTimeoutMS: 3000,
         entities: [
           School,
           User,
@@ -78,7 +85,8 @@ import { NotificationLog } from './database/entities/notification-log.entity';
           NotificationLog,
         ],
         synchronize: config.get<string>('DB_SYNCHRONIZE', 'false') === 'true',
-        migrationsRun: config.get<string>('DB_MIGRATIONS_RUN', 'false') === 'true',
+        migrationsRun:
+          config.get<string>('DB_MIGRATIONS_RUN', 'false') === 'true',
         logging: config.get<string>('NODE_ENV') === 'development',
       }),
     }),
