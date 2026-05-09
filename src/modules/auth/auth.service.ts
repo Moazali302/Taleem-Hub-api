@@ -369,6 +369,30 @@ export class AuthService {
       message: AuthMessages.OTP_SENT,
     };
   }
+  async verifyResetOtp(dto: VerifyOtpDto): Promise<{
+    success: boolean;
+    message: string;
+  }> {
+    const email = dto.email.toLowerCase().trim();
+    const school = await this.schoolRepository.findOne({ where: { email } });
+    if (!school) {
+      throw new NotFoundException(AuthMessages.USER_NOT_FOUND);
+    }
+  
+    if (
+      !school.otp ||
+      school.otp !== dto.otp ||
+      !school.otp_expires_at ||
+      school.otp_expires_at.getTime() < Date.now()
+    ) {
+      throw new UnauthorizedException(AuthMessages.INVALID_OR_EXPIRED_OTP);
+    }
+  
+    return {
+      success: true,
+      message: 'OTP verified successfully',
+    };
+  }
   async forgotPassword(dto: ForgotPasswordDto): Promise<{
     success: boolean;
     message: string;

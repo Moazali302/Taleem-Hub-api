@@ -36,6 +36,13 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
+  @Post('verify-reset-otp')
+@HttpCode(HttpStatus.OK)
+@ApiOperation({ summary: 'Verify OTP before resetting password' })
+@ApiResponse({ status: 200 })
+async verifyResetOtp(@Body() dto: VerifyOtpDto) {
+  return this.authService.verifyResetOtp(dto);
+}
 
   @Get('approve/:schoolId')
   @ApiOperation({ summary: 'Approve a school (superadmin email link)' })
