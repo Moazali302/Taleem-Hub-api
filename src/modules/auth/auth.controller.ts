@@ -23,12 +23,14 @@ import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
+import { SkipThrottle, Throttle } from '@nestjs/throttler';
 
 @ApiTags('auth')
 @Controller('auth')
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
+  @SkipThrottle()
   @Post('register')
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Register a new school (pending approval)' })
@@ -36,6 +38,8 @@ export class AuthController {
   async register(@Body() registerDto: RegisterDto) {
     return this.authService.register(registerDto);
   }
+
+  @SkipThrottle()
   @Post('verify-reset-otp')
 @HttpCode(HttpStatus.OK)
 @ApiOperation({ summary: 'Verify OTP before resetting password' })
@@ -44,6 +48,7 @@ async verifyResetOtp(@Body() dto: VerifyOtpDto) {
   return this.authService.verifyResetOtp(dto);
 }
 
+  @SkipThrottle()
   @Get('approve/:schoolId')
   @ApiOperation({ summary: 'Approve a school (superadmin email link)' })
   async approve(
@@ -54,6 +59,7 @@ async verifyResetOtp(@Body() dto: VerifyOtpDto) {
     res.type('html').send(html);
   }
 
+  @SkipThrottle()
   @Get('reject/:schoolId')
   @ApiOperation({ summary: 'Reject a school (superadmin email link)' })
   async reject(
@@ -64,6 +70,7 @@ async verifyResetOtp(@Body() dto: VerifyOtpDto) {
     res.type('html').send(html);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -74,6 +81,7 @@ async verifyResetOtp(@Body() dto: VerifyOtpDto) {
     return this.authService.login(loginDto, req);
   }
 
+  @SkipThrottle()
   @Post('verify-otp')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -87,12 +95,14 @@ async verifyResetOtp(@Body() dto: VerifyOtpDto) {
     return this.authService.verifyOtp(verifyOtpDto, res);
   }
 
+  @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
   @Post('resend-otp')
   @HttpCode(HttpStatus.OK)
   resendOtp(@Body() dto: ResendOtpDto) {
     return this.authService.resendOtp(dto);
   }
 
+  @SkipThrottle()
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password reset link with OTP' })
@@ -101,6 +111,7 @@ async verifyResetOtp(@Body() dto: VerifyOtpDto) {
     return this.authService.forgotPassword(forgotPasswordDto);
   }
 
+  @SkipThrottle()
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password using email and OTP' })
@@ -109,6 +120,7 @@ async verifyResetOtp(@Body() dto: VerifyOtpDto) {
     return this.authService.resetPassword(resetPasswordDto);
   }
 
+  @SkipThrottle()
   @Post('logout')
   @HttpCode(HttpStatus.OK)
   @ApiBearerAuth()

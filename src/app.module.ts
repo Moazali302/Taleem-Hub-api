@@ -38,12 +38,21 @@ import { Announcement } from './database/entities/announcement.entity';
 import { Subscription } from './database/entities/subscription.entity';
 import { AuditLog } from './database/entities/audit-log.entity';
 import { NotificationLog } from './database/entities/notification-log.entity';
+import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
+import { APP_GUARD } from '@nestjs/core';
 
 @Module({
   imports: [
+    ThrottlerModule.forRoot([
+      {
+        ttl:   15 * 60 * 1000, // 15 min (milliseconds)
+        limit: 5,               // 5 attempts
+      }
+    ]),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env', 'src/.env'],
+
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
@@ -101,6 +110,11 @@ import { NotificationLog } from './database/entities/notification-log.entity';
     SuperAdminModule,
   ],
   controllers: [AppController],
-  providers: [AppService],
+  providers: [
+      {
+      provide:  APP_GUARD,
+      useClass: ThrottlerGuard, // sab routes pe apply
+    },
+    AppService],
 })
 export class AppModule {}
