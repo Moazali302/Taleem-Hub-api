@@ -7,9 +7,8 @@ export class ResendOtpDto {
   @IsNotEmpty({ message: 'Email is required' })
   email!: string;
 
-
   @ApiProperty({ example: 'reset', required: false })
   @IsString()
   @IsOptional()
-  mode?: string; // 
+  mode?: string;
 }

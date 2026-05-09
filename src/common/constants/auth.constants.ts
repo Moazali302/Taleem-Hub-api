@@ -2,7 +2,7 @@
 export const TALEEM_TOKEN_COOKIE = 'taleem_token';
 
 /** Bcrypt salt rounds for password hashing. */
-export const BCRYPT_SALT_ROUNDS = 12;
+export const BCRYPT_SALT_ROUNDS = 10;
 
 /** OTP validity window in minutes (login and password reset). */
 export const OTP_EXPIRY_MINUTES = 5;
