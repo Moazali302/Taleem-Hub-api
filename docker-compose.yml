@@ -1,0 +1,32 @@
+services:
+  backend-dev:
+    build:
+      context: .
+      target: dev
+    container_name: taleem-hub-api-dev
+    env_file:
+      - .env
+    environment:
+      - PORT=${PORT:-3000}
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    volumes:
+      - .:/app
+      - /app/node_modules
+    command: npm run start:dev
+
+  backend-prod:
+    build:
+      context: .
+      target: prod
+    container_name: taleem-hub-api-prod
+    env_file:
+      - .env
+    environment:
+      - NODE_ENV=production
+      - PORT=${PORT:-3000}
+    ports:
+      - "${PORT:-3000}:${PORT:-3000}"
+    command: npm run start:prod
+    profiles:
+      - prod
