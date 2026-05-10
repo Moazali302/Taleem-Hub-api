@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-unsafe-call */
 import { Module } from '@nestjs/common';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { TypeOrmModule } from '@nestjs/typeorm';
@@ -38,27 +39,25 @@ import { Announcement } from './database/entities/announcement.entity';
 import { Subscription } from './database/entities/subscription.entity';
 import { AuditLog } from './database/entities/audit-log.entity';
 import { NotificationLog } from './database/entities/notification-log.entity';
-import { ThrottlerGuard, ThrottlerModule } from '@nestjs/throttler';
-import { APP_GUARD } from '@nestjs/core';
+import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
   imports: [
     ThrottlerModule.forRoot([
-     {
-    name:  'login',
-    ttl:   15 * 60 * 1000, // 15 min
-    limit: 5,
-  },
-  {
-    name:  'resendOtp',
-    ttl:   5 * 60 * 1000,  // 5 min
-    limit: 5,
-  },
+      {
+        name: 'login',
+        ttl: 15 * 60 * 1000, // 15 min
+        limit: 5,
+      },
+      {
+        name: 'resendOtp',
+        ttl: 5 * 60 * 1000, // 5 min
+        limit: 5,
+      },
     ]),
     ConfigModule.forRoot({
       isGlobal: true,
       envFilePath: ['.env', 'src/.env'],
-
     }),
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
