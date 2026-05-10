@@ -44,10 +44,16 @@ import { APP_GUARD } from '@nestjs/core';
 @Module({
   imports: [
     ThrottlerModule.forRoot([
-      {
-        ttl:   15 * 60 * 1000, // 15 min (milliseconds)
-        limit: 5,               // 5 attempts
-      }
+     {
+    name:  'login',
+    ttl:   15 * 60 * 1000, // 15 min
+    limit: 5,
+  },
+  {
+    name:  'resendOtp',
+    ttl:   5 * 60 * 1000,  // 5 min
+    limit: 5,
+  },
     ]),
     ConfigModule.forRoot({
       isGlobal: true,
@@ -118,11 +124,6 @@ import { APP_GUARD } from '@nestjs/core';
     SuperAdminModule,
   ],
   controllers: [AppController],
-  providers: [
-      {
-      provide:  APP_GUARD,
-      useClass: ThrottlerGuard, // sab routes pe apply
-    },
-    AppService],
+  providers: [AppService],
 })
 export class AppModule {}

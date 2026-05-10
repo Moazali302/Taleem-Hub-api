@@ -343,32 +343,65 @@ export class AuthService {
     };
   }
   async resendOtp(
-    dto: ResendOtpDto,
-  ): Promise<{ success: boolean; message: string }> {
-    const email = dto.email.toLowerCase().trim();
+  dto: ResendOtpDto,
+): Promise<{ success: boolean; message: string }> {
+  const email = dto.email.toLowerCase().trim();
 
-    const school = await this.schoolRepository.findOne({ where: { email } });
-    if (!school) {
-      throw new NotFoundException(AuthMessages.USER_NOT_FOUND);
-    }
+  const school = await this.schoolRepository.findOne({ where: { email } });
+  if (!school) {
+    throw new NotFoundException(AuthMessages.USER_NOT_FOUND);
+  }
 
-    const otp = this.generateSixDigitOtp();
-    school.otp = otp;
-    school.otp_expires_at = this.getOtpExpiryDate(); // ← correct field name
-    await this.schoolRepository.save(school);
+  const otp = this.generateSixDigitOtp();
+  school.otp = otp;
+  school.otp_expires_at = this.getOtpExpiryDate();
+  await this.schoolRepository.save(school);
 
-    await this.mailService.sendLoginOtpEmail({
-      // ← correct method name
+  if (dto.mode === 'reset') {
+    await this.mailService.sendForgotPasswordEmail({
       to: school.email,
       ownerName: school.owner_name,
       otp,
     });
-
-    return {
-      success: true,
-      message: AuthMessages.OTP_SENT,
-    };
+  } else {
+    await this.mailService.sendLoginOtpEmail({
+      to: school.email,
+      ownerName: school.owner_name,
+      otp,
+    });
   }
+
+  return {
+    success: true,
+    message: AuthMessages.OTP_SENT,
+  };
+}
+  // async resendOtp(
+  //   dto: ResendOtpDto,
+  // ): Promise<{ success: boolean; message: string }> {
+  //   const email = dto.email.toLowerCase().trim();
+
+  //   const school = await this.schoolRepository.findOne({ where: { email } });
+  //   if (!school) {
+  //     throw new NotFoundException(AuthMessages.USER_NOT_FOUND);
+  //   }
+  //   const otp = this.generateSixDigitOtp();
+  //   school.otp = otp;
+  //   school.otp_expires_at = this.getOtpExpiryDate(); // ← correct field name
+  //   await this.schoolRepository.save(school);
+
+  //   await this.mailService.sendLoginOtpEmail({
+  //     // ← correct method name
+  //     to: school.email,
+  //     ownerName: school.owner_name,
+  //     otp,
+  //   });
+
+  //   return {
+  //     success: true,
+  //     message: AuthMessages.OTP_SENT,
+  //   };
+  // }
   async verifyResetOtp(dto: VerifyOtpDto): Promise<{
     success: boolean;
     message: string;

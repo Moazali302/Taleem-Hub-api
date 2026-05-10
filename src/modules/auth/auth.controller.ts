@@ -41,12 +41,12 @@ export class AuthController {
 
   @SkipThrottle()
   @Post('verify-reset-otp')
-@HttpCode(HttpStatus.OK)
-@ApiOperation({ summary: 'Verify OTP before resetting password' })
-@ApiResponse({ status: 200 })
-async verifyResetOtp(@Body() dto: VerifyOtpDto) {
-  return this.authService.verifyResetOtp(dto);
-}
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({ summary: 'Verify OTP before resetting password' })
+  @ApiResponse({ status: 200 })
+  async verifyResetOtp(@Body() dto: VerifyOtpDto) {
+    return this.authService.verifyResetOtp(dto);
+  }
 
   @SkipThrottle()
   @Get('approve/:schoolId')
@@ -70,7 +70,7 @@ async verifyResetOtp(@Body() dto: VerifyOtpDto) {
     res.type('html').send(html);
   }
 
-  @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
+  @Throttle({ login: { limit: 5, ttl: 15 * 60 * 1000 } })
   @Post('login')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -95,7 +95,7 @@ async verifyResetOtp(@Body() dto: VerifyOtpDto) {
     return this.authService.verifyOtp(verifyOtpDto, res);
   }
 
-  @Throttle({ default: { limit: 5, ttl: 15 * 60 * 1000 } })
+  @Throttle({ resendOtp: { limit: 5, ttl: 5 * 60 * 1000 } })
   @Post('resend-otp')
   @HttpCode(HttpStatus.OK)
   resendOtp(@Body() dto: ResendOtpDto) {
