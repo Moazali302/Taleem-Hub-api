@@ -13,6 +13,7 @@ async function bootstrap() {
 
   app.setGlobalPrefix('v1');
 
+  // eslint-disable-next-line @typescript-eslint/no-unsafe-call
   const frontendUrl = configService.getOrThrow<string>('FRONTEND_URL');
   app.enableCors({
     origin: frontendUrl,
@@ -30,7 +31,7 @@ async function bootstrap() {
   );
 
   app.useGlobalFilters(new HttpExceptionFilter(),
-  new ThrottlerExceptionFilter()
+    new ThrottlerExceptionFilter(),
 );
 
   const swaggerConfig = new DocumentBuilder()
