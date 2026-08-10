@@ -1,5 +1,5 @@
 import { ApiProperty } from '@nestjs/swagger';
-import { IsEmail, IsNotEmpty, IsString, MaxLength, MinLength } from 'class-validator';
+import { IsEmail, IsNotEmpty, IsOptional, IsString, MaxLength, MinLength } from 'class-validator';
 
 export class LoginDto {
   @ApiProperty()
@@ -14,8 +14,11 @@ export class LoginDto {
   @MinLength(1, { message: 'Password is required' })
   password: string;
   
-  @ApiProperty({ description: 'Unique school identifier' })
-  @IsString({ message: 'School ID must be a string' })
-  @IsNotEmpty({ message: 'School ID is required' })
-  schoolId: string;
+ @ApiPropertyOptional({
+  description: 'Unique school identifier. Not required for superadmin.',
+})
+@IsOptional()
+@IsString({ message: 'School ID must be a string' })
+@MaxLength(255, { message: 'School ID must be at most 255 characters' })
+schoolId?: string;
 }

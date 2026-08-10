@@ -22,10 +22,9 @@ export class User {
   // @JoinColumn({ name: 'school_id' })
   // school!: School;
 
-  @ManyToOne(() => School)
-  @JoinColumn({ name: 'school_id' })
-  school!: School;
-
+ @ManyToOne(() => School, { nullable: true })
+ @JoinColumn({ name: 'school_id' })
+ school!: School | null;
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 
