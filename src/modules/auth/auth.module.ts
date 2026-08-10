@@ -12,12 +12,13 @@ import { JwtAuthGuard } from './guards/jwt-auth.guard';
 import { RolesGuard } from './guards/roles.guard';
 import { TenantGuard } from './guards/tenant.guard';
 import { JwtStrategy } from './strategies/jwt.strategy';
+import { User } from 'src/database/entities/user.entity';
 
 @Global()
 @Module({
   imports: [
     MailModule,
-    TypeOrmModule.forFeature([School]),
+    TypeOrmModule.forFeature([School,User]),
     PassportModule.register({ defaultStrategy: 'jwt' }),
     JwtModule.registerAsync({
       imports: [ConfigModule],
