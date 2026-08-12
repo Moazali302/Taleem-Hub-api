@@ -192,6 +192,25 @@ export class AuthService {
 
     await this.schoolRepository.save(school);
 
+  const existingUser = await this.userRepository.findOne({
+  where: { email: school.email },
+});
+
+   if (!existingUser) {
+  const user = this.userRepository.create({
+    name: school.owner_name,
+    email: school.email,
+    phone: school.phone,
+    password_hash: school.password_hash,
+    role: SchoolRoleEnum.ADMIN,
+    is_active: true,
+    email_verified: true,
+    school: school,
+  });
+
+  await this.userRepository.save(user);
+}
+
     const frontend = this.configService
       .getOrThrow<string>('FRONTEND_URL')
       .replace(/\/$/, '');
