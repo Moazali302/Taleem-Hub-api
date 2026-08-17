@@ -8,7 +8,7 @@ export const BCRYPT_SALT_ROUNDS = 10;
 export const OTP_EXPIRY_MINUTES = 5;
 
 /** JWT access token max age in hours (must align with JWT_EXPIRY). */
-export const JWT_COOKIE_MAX_AGE_HOURS = 24;
+export const JWT_COOKIE_MAX_AGE_HOURS =Number(process.env.JWT_COOKIE_MAX_AGE_HOURS) || 24;
 
 /** Metadata key for @Roles() decorator (RolesGuard). */
 export const ROLES_METADATA_KEY = 'roles';

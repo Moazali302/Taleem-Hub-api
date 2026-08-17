@@ -152,11 +152,6 @@ export class AuthService {
     };
   }
 
-
-  // ============================================================
-  // APPROVE SCHOOL
-  // ============================================================
-
   async approveSchool(
     schoolBusinessId: string,
   ): Promise<string> {
@@ -231,11 +226,6 @@ export class AuthService {
     );
   }
 
-
-  // ============================================================
-  // REJECT SCHOOL
-  // ============================================================
-
   async rejectSchool(
     schoolBusinessId: string,
   ): Promise<string> {
@@ -267,14 +257,6 @@ export class AuthService {
     );
   }
 
-
-  // ============================================================
-  // LOGIN
-  // Single source of truth: users table.
-  // - superadmin  -> no schoolId / school-status check
-  // - admin/teacher/student -> schoolId must match linked school,
-  //   and linked school must be APPROVED
-  // ============================================================
 
   async login(
     dto: LoginDto,
@@ -330,10 +312,6 @@ export class AuthService {
       this.assertSchoolAccess(user, dto.schoolId);
     }
 
-    // ----------------------------------------------------------
-    // Existing valid cookie -> skip OTP, reuse token
-    // ----------------------------------------------------------
-
     const cookieToken = req.cookies?.[
       TALEEM_TOKEN_COOKIE
     ] as string | undefined;
@@ -373,10 +351,6 @@ export class AuthService {
       }
     }
 
-    // ----------------------------------------------------------
-    // Generate + send OTP
-    // ----------------------------------------------------------
-
     const otp = this.generateSixDigitOtp();
     const otp_expires_at = this.getOtpExpiryDate();
 
@@ -397,12 +371,6 @@ export class AuthService {
       requiresOtp: true,
     };
   }
-
-
-  // ============================================================
-  // VERIFY OTP
-  // Same single-source (users table) rule as login().
-  // ============================================================
 
   async verifyOtp(
     dto: VerifyOtpDto,
