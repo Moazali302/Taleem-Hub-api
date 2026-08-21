@@ -47,11 +47,11 @@ export class User {
   @Column({ name: 'isEmailVerified', type: 'boolean', default: false })
   email_verified!: boolean;
 
-  @Column({ type: 'varchar', length: 6, nullable: true })
-  otp!: string;
+ @Column({ type: 'varchar', length: 6, nullable: true })
+otp!: string | null;
 
-  @Column({ name: 'otpExpiry', type: 'timestamp', nullable: true })
-  otp_expires_at!: Date;
+@Column({ name: 'otpExpiry', type: 'timestamp', nullable: true })
+otp_expires_at!: Date | null;
 
   @Column({
     name: 'refreshToken',

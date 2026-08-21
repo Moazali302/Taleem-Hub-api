@@ -1,42 +1,29 @@
-import { Controller, Get, Patch, Post, Delete, Body, Param, UseGuards, UploadedFile, UseInterceptors } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { SchoolsService } from './schools.service';
+import { CreateSchoolDto } from './dto/create-school.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { TenantGuard } from '../../common/guards/tenant.guard';
-import { FileInterceptor } from '@nestjs/platform-express';
+import { RolesGuard } from '../../common/guards/roles.guard';
+import { Roles } from '../../common/decorators/roles.decorator';
+import { SchoolRoleEnum } from '../../common/constants/auth.constants';
 
-@Controller('school')
-@UseGuards(JwtAuthGuard, TenantGuard)
+@ApiTags('schools')
+@ApiBearerAuth()
+@Controller('schools')
+@UseGuards(JwtAuthGuard, RolesGuard)
 export class SchoolsController {
   constructor(private readonly schoolsService: SchoolsService) {}
 
-  @Get('settings')
-  getSettings() {
-    return this.schoolsService.getSettings();
-  }
-
-  @Patch('settings')
-  updateSettings(@Body() data: any) {
-    return this.schoolsService.updateSettings(data);
-  }
-
-  @Post('settings/logo')
-  @UseInterceptors(FileInterceptor('logo'))
-  uploadLogo(@UploadedFile() file: Express.Multer.File) {
-    return this.schoolsService.uploadLogo(file);
-  }
-
-  @Delete('settings/logo')
-  deleteLogo() {
-    return this.schoolsService.deleteLogo();
-  }
-
-  @Get('settings/location')
-  getLocation() {
-    return this.schoolsService.getLocation();
-  }
-
-  @Patch('settings/location')
-  updateLocation(@Body() location: any) {
-    return this.schoolsService.updateLocation(location);
+  @Post()
+  @Roles(SchoolRoleEnum.SUPERADMIN)
+  @HttpCode(HttpStatus.CREATED)
+  @ApiOperation({ summary: 'Add a new school (super-admin only)' })
+  async create(@Body() dto: CreateSchoolDto) {
+    const result = await this.schoolsService.create(dto);
+    return {
+      success: true,
+      message: 'School added successfully',
+      data: result,
+    };
   }
 }
