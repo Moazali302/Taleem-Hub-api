@@ -3,7 +3,7 @@ import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { SchoolsService } from './schools.service';
 import { CreateSchoolDto } from './dto/create-school.dto';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
-import { RolesGuard } from '../../common/guards/roles.guard';
+import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { SchoolRoleEnum } from '../../common/constants/auth.constants';
 
@@ -14,7 +14,7 @@ import { SchoolRoleEnum } from '../../common/constants/auth.constants';
 export class SchoolsController {
   constructor(private readonly schoolsService: SchoolsService) {}
 
-  @Post()
+  @Post('create-school')
   @Roles(SchoolRoleEnum.SUPERADMIN)
   @HttpCode(HttpStatus.CREATED)
   @ApiOperation({ summary: 'Add a new school (super-admin only)' })
