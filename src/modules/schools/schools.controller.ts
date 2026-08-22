@@ -1,4 +1,4 @@
-import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards } from '@nestjs/common';
+import { Controller, Post, Body, HttpCode, HttpStatus, UseGuards, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiBearerAuth } from '@nestjs/swagger';
 import { SchoolsService } from './schools.service';
 import { CreateSchoolDto } from './dto/create-school.dto';
@@ -24,6 +24,18 @@ export class SchoolsController {
       success: true,
       message: 'School added successfully',
       data: result,
+    };
+  }
+  @Get()
+  @Roles(SchoolRoleEnum.SUPERADMIN)
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({summary:'list all Schools (super-admin-only)'})
+  async findAll(){
+    const schools=await this.schoolsService.findAll();
+    return{
+      success:true,
+      message:'Schools fetched Successfully',
+      data:schools,
     };
   }
 }

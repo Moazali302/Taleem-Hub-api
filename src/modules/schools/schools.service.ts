@@ -2,6 +2,7 @@ import { Injectable, ConflictException } from '@nestjs/common';
 import { InjectDataSource, InjectRepository } from '@nestjs/typeorm';
 import { DataSource, Repository } from 'typeorm';
 import * as bcrypt from 'bcrypt';
+import { In } from 'typeorm';
 import { School } from '../../database/entities/school.entity';
 import { User } from '../../database/entities/user.entity';
 import { CreateSchoolDto } from './dto/create-school.dto';
@@ -68,5 +69,32 @@ export class SchoolsService {
       counter++;
     }
     return candidate;
+  }
+
+  async findAll(): Promise<any[]> {
+    const schools = await this.schoolRepo.find({
+      order: { created_at: 'DESC' },
+    });
+
+    const schoolIds = schools.map((s) => s.id);
+
+    const admins = await this.userRepo.find({
+      where: { school: { id: In(schoolIds) }, role: SchoolRoleEnum.ADMIN },
+      relations: ['school'],
+    });
+
+    const adminMap = admins.reduce((map, admin) => {
+      if (admin.school) {
+        map.set(admin.school.id, admin);
+      }
+      return map;
+    }, new Map<number, User>());
+
+    return schools.map((school) => ({
+      ...school,
+      owner_name: adminMap.get(school.id)?.name ?? '',
+      owner_email: adminMap.get(school.id)?.email ?? '',
+      owner_phone: adminMap.get(school.id)?.phone ?? '',
+    }));
   }
 }
