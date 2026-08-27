@@ -14,8 +14,11 @@ export class Subscription {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ type: 'uuid' })
-  school_id: string;
+  // School.id is an auto-increment integer (see school.entity.ts), so the FK
+  // column here must be 'int', not 'uuid' — a uuid column cannot reference
+  // an integer primary key.
+  @Column({ type: 'int' })
+  school_id: number;
 
   @ManyToOne(() => School)
   @JoinColumn({ name: 'school_id' })
@@ -23,8 +26,8 @@ export class Subscription {
 
   @Column({
     type: 'enum',
-    enum: ['free', 'basic', 'premium', 'enterprise'],
-    default: 'free',
+    enum: ['basic', 'advanced', 'premium'],
+    default: 'basic',
   })
   plan: string;
 

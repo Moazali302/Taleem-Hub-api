@@ -22,6 +22,7 @@ import { AnnouncementsModule } from './modules/announcements/announcements.modul
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { SuperAdminModule } from './modules/super-admin/super-admin.module';
+import { DemoRequestsModule } from './modules/demo-request/demo-requests.module';
 
 import { School } from './database/entities/school.entity';
 import { User } from './database/entities/user.entity';
@@ -39,6 +40,8 @@ import { Announcement } from './database/entities/announcement.entity';
 import { Subscription } from './database/entities/subscription.entity';
 import { AuditLog } from './database/entities/audit-log.entity';
 import { NotificationLog } from './database/entities/notification-log.entity';
+import { Expense } from './database/entities/expense.entity';
+import { DemoRequest } from './database/entities/demo-request.entity';
 import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
@@ -97,6 +100,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
           Subscription,
           AuditLog,
           NotificationLog,
+          Expense,
+          DemoRequest,
         ],
         synchronize: config.get<string>('DB_SYNCHRONIZE', 'false') === 'true',
         migrationsRun:
@@ -121,6 +126,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     NotificationsModule,
     SubscriptionsModule,
     SuperAdminModule,
+    DemoRequestsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
