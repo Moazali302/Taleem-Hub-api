@@ -23,15 +23,17 @@ export class SuperAdminService {
   ) {}
 
   async getAllSchools() {
-    const schools = await this.schoolRepo.find({
-      order: { created_at: 'DESC' },
-    });
-    const subscriptions = await this.subscriptionRepo.find();
-    const subscriptionBySchoolId = new Map(
-      subscriptions.map((sub) => [sub.school_id, sub]),
-    );
+    // Single query with a join instead of 2 separate round trips
+    // (School list + Subscription list, joined in JS) — halves the
+    // number of DB round trips this endpoint needs.
+    const rows = await this.schoolRepo
+      .createQueryBuilder('school')
+      .leftJoin(Subscription, 'subscription', 'subscription.school_id = school.id')
+      .addSelect(['subscription.plan', 'subscription.status'])
+      .orderBy('school.created_at', 'DESC')
+      .getRawAndEntities();
 
-    return schools.map((school) => ({
+    return rows.entities.map((school, i) => ({
       id: school.id,
       schoolId: school.school_id,
       schoolName: school.school_name,
@@ -39,8 +41,8 @@ export class SuperAdminService {
       email: school.email,
       status: school.status,
       createdAt: school.created_at,
-      package: subscriptionBySchoolId.get(school.id)?.plan ?? null,
-      subscriptionStatus: subscriptionBySchoolId.get(school.id)?.status ?? null,
+      package: rows.raw[i]?.subscription_plan ?? null,
+      subscriptionStatus: rows.raw[i]?.subscription_status ?? null,
     }));
   }
 

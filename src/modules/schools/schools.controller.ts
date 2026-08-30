@@ -7,7 +7,7 @@ import { RolesGuard } from '../auth/guards/roles.guard';
 import { Roles } from '../../common/decorators/roles.decorator';
 import { SchoolRoleEnum } from '../../common/constants/auth.constants';
 
-@ApiTags('schools')
+@ApiTags('GetAllSchools')
 @ApiBearerAuth()
 @Controller('schools')
 @UseGuards(JwtAuthGuard, RolesGuard)

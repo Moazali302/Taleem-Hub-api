@@ -8,6 +8,7 @@ import {
   Query,
   UseGuards,
 } from '@nestjs/common';
+import { ApiOperation } from '@nestjs/swagger';
 import { SuperAdminService } from './super-admin.service';
 import { JwtAuthGuard } from '../../common/guards/jwt-auth.guard';
 import { RolesGuard } from '../auth/guards/roles.guard';
@@ -25,7 +26,8 @@ import {
 export class SuperAdminController {
   constructor(private readonly superAdminService: SuperAdminService) {}
 
-  @Get('schools')
+  @Get('GetAllSchools')
+  @ApiOperation({ summary: 'GetAllSchools' })
   getAllSchools() {
     return this.superAdminService.getAllSchools();
   }
