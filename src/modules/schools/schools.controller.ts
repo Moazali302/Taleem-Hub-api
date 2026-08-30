@@ -26,7 +26,7 @@ export class SchoolsController {
       data: result,
     };
   }
-  @Get()
+  @Get('GetAllSchools')
   @Roles(SchoolRoleEnum.SUPERADMIN)
   @HttpCode(HttpStatus.OK)
   @ApiOperation({summary:'list all Schools (super-admin-only)'})
