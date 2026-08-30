@@ -1,19 +1,23 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Between, Repository } from 'typeorm';
+import { Between, In, Repository } from 'typeorm';
 import { School } from '../../database/entities/school.entity';
+import { User } from '../../database/entities/user.entity';
 import { AuditLog } from '../../database/entities/audit-log.entity';
 import { Subscription } from '../../database/entities/subscription.entity';
 import { Expense } from '../../database/entities/expense.entity';
 import { UpdatePackageDto } from './dto/update-package.dto';
 import { CreateExpenseDto } from './dto/create-expense.dto';
 import { PackageMonthlyPricePkr } from '../../common/constants/package-pricing.constants';
+import { SchoolRoleEnum } from '../../common/constants/auth.constants';
 
 @Injectable()
 export class SuperAdminService {
   constructor(
     @InjectRepository(School)
     private readonly schoolRepo: Repository<School>,
+    @InjectRepository(User)
+    private readonly userRepo: Repository<User>,
     @InjectRepository(AuditLog)
     private readonly auditLogRepo: Repository<AuditLog>,
     @InjectRepository(Subscription)
@@ -23,26 +27,42 @@ export class SuperAdminService {
   ) {}
 
   async getAllSchools() {
-    // Single query with a join instead of 2 separate round trips
-    // (School list + Subscription list, joined in JS) — halves the
-    // number of DB round trips this endpoint needs.
-    const rows = await this.schoolRepo
-      .createQueryBuilder('school')
-      .leftJoin(Subscription, 'subscription', 'subscription.school_id = school.id')
-      .addSelect(['subscription.plan', 'subscription.status'])
-      .orderBy('school.created_at', 'DESC')
-      .getRawAndEntities();
+    // Owner (name/email/phone) lives on User, not School — same join
+    // pattern as SchoolsService.findAll(). Package/status come from
+    // Subscription via a second lookup, joined here in JS.
+    const schools = await this.schoolRepo.find({
+      order: { created_at: 'DESC' },
+    });
+    const schoolIds = schools.map((s) => s.id);
 
-    return rows.entities.map((school, i) => ({
+    const [admins, subscriptions] = await Promise.all([
+      this.userRepo.find({
+        where: { school: { id: In(schoolIds) }, role: SchoolRoleEnum.ADMIN },
+        relations: ['school'],
+      }),
+      this.subscriptionRepo.find({ where: { school_id: In(schoolIds) } }),
+    ]);
+
+    const adminBySchoolId = new Map(
+      admins.filter((a) => a.school).map((a) => [a.school!.id, a]),
+    );
+    const subscriptionBySchoolId = new Map(
+      subscriptions.map((s) => [s.school_id, s]),
+    );
+
+    return schools.map((school) => ({
       id: school.id,
-      schoolId: school.school_id,
-      schoolName: school.school_name,
-      ownerName: school.owner_name,
-      email: school.email,
+      school_id: school.school_id,
+      school_name: school.school_name,
+      school_address: school.school_address,
       status: school.status,
-      createdAt: school.created_at,
-      package: rows.raw[i]?.subscription_plan ?? null,
-      subscriptionStatus: rows.raw[i]?.subscription_status ?? null,
+      created_at: school.created_at,
+      updated_at: school.updated_at,
+      owner_name: adminBySchoolId.get(school.id)?.name ?? '',
+      owner_email: adminBySchoolId.get(school.id)?.email ?? '',
+      owner_phone: adminBySchoolId.get(school.id)?.phone ?? '',
+      package: subscriptionBySchoolId.get(school.id)?.plan ?? null,
+      subscription_status: subscriptionBySchoolId.get(school.id)?.status ?? null,
     }));
   }
 

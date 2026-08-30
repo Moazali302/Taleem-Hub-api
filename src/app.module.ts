@@ -22,7 +22,7 @@ import { AnnouncementsModule } from './modules/announcements/announcements.modul
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { SuperAdminModule } from './modules/super-admin/super-admin.module';
-import { DemoRequestsModule } from './modules/demo-requests/demo-requests.module';
+import { DemoRequestsModule } from './modules/demo-request/demo-requests.module';
 
 import { School } from './database/entities/school.entity';
 import { User } from './database/entities/user.entity';

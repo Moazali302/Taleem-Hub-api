@@ -7,6 +7,7 @@ import {
   Body,
   Query,
   UseGuards,
+  UseInterceptors,
 } from '@nestjs/common';
 import { ApiOperation } from '@nestjs/swagger';
 import { SuperAdminService } from './super-admin.service';
@@ -19,10 +20,12 @@ import {
   CurrentUser,
   type TaleemAuthUser,
 } from '../../common/decorators/current-user.decorator';
+import { TransformInterceptor } from '../../common/interceptors/transform.interceptor';
 
 @Controller('super-admin')
 @UseGuards(JwtAuthGuard, RolesGuard)
 @Roles('superadmin')
+@UseInterceptors(TransformInterceptor)
 export class SuperAdminController {
   constructor(private readonly superAdminService: SuperAdminService) {}
 
