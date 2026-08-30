@@ -22,6 +22,7 @@ import { AnnouncementsModule } from './modules/announcements/announcements.modul
 import { NotificationsModule } from './modules/notifications/notifications.module';
 import { SubscriptionsModule } from './modules/subscriptions/subscriptions.module';
 import { SuperAdminModule } from './modules/super-admin/super-admin.module';
+import { DemoRequestsModule } from './modules/demo-request/demo-requests.module';
 
 import { School } from './database/entities/school.entity';
 import { User } from './database/entities/user.entity';
@@ -39,6 +40,8 @@ import { Announcement } from './database/entities/announcement.entity';
 import { Subscription } from './database/entities/subscription.entity';
 import { AuditLog } from './database/entities/audit-log.entity';
 import { NotificationLog } from './database/entities/notification-log.entity';
+import { Expense } from './database/entities/expense.entity';
+import { DemoRequest } from './database/entities/demo-request.entity';
 import { ThrottlerModule } from '@nestjs/throttler';
 
 @Module({
@@ -75,11 +78,18 @@ import { ThrottlerModule } from '@nestjs/throttler';
         },
         extra: {
           max: 10,
-          idleTimeoutMillis: 10000,
-          connectionTimeoutMillis: 3000,
+          min: 2, // keep at least 2 connections warm — avoids paying full
+                  // SSL-handshake + auth cost on every request after idle
+          idleTimeoutMillis: 300000, // 5 min instead of 10s — matches
+                                     // typical admin-panel usage pattern
+                                     // (clicks with pauses, not constant load)
+          connectionTimeoutMillis: 5000,
+          keepAlive: true, // TCP keep-alive — some cloud NATs silently
+                           // drop idle connections before idleTimeoutMillis
+                           // is reached, forcing a reconnect anyway
         },
         poolSize: 10,
-        connectTimeoutMS: 3000,
+        connectTimeoutMS: 5000,
         entities: [
           School,
           User,
@@ -97,6 +107,8 @@ import { ThrottlerModule } from '@nestjs/throttler';
           Subscription,
           AuditLog,
           NotificationLog,
+          Expense,
+          DemoRequest,
         ],
         synchronize: config.get<string>('DB_SYNCHRONIZE', 'false') === 'true',
         migrationsRun:
@@ -121,6 +133,7 @@ import { ThrottlerModule } from '@nestjs/throttler';
     NotificationsModule,
     SubscriptionsModule,
     SuperAdminModule,
+    DemoRequestsModule,
   ],
   controllers: [AppController],
   providers: [AppService],

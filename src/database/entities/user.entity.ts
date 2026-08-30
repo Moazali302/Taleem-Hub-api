@@ -22,10 +22,9 @@ export class User {
   // @JoinColumn({ name: 'school_id' })
   // school!: School;
 
-  @ManyToOne(() => School)
-  @JoinColumn({ name: 'school_id' })
-  school!: School;
-
+ @ManyToOne(() => School, { nullable: true })
+ @JoinColumn({ name: 'school_id' })
+ school!: School | null;
   @Column({ type: 'varchar', length: 255 })
   name!: string;
 
@@ -48,11 +47,11 @@ export class User {
   @Column({ name: 'isEmailVerified', type: 'boolean', default: false })
   email_verified!: boolean;
 
-  @Column({ type: 'varchar', length: 6, nullable: true })
-  otp!: string;
+ @Column({ type: 'varchar', length: 6, nullable: true })
+otp!: string | null;
 
-  @Column({ name: 'otpExpiry', type: 'timestamp', nullable: true })
-  otp_expires_at!: Date;
+@Column({ name: 'otpExpiry', type: 'timestamp', nullable: true })
+otp_expires_at!: Date | null;
 
   @Column({
     name: 'refreshToken',

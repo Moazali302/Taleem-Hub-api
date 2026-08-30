@@ -1,35 +1,38 @@
-import {
-  CanActivate,
-  ExecutionContext,
-  ForbiddenException,
-  Injectable,
-} from '@nestjs/common';
+// src/common/guards/roles.guard.ts
+import { Injectable, CanActivate, ExecutionContext, ForbiddenException } from '@nestjs/common';
 import { Reflector } from '@nestjs/core';
-import {
-  AuthMessages,
-  ROLES_METADATA_KEY,
-} from '../../../common/constants/auth.constants';
+import { ROLES_KEY } from '../decorators/roles.decorator';
 
 @Injectable()
 export class RolesGuard implements CanActivate {
   constructor(private readonly reflector: Reflector) {}
 
-  /**
-   * Ensures the authenticated user's role matches one of the roles declared via @Roles() metadata.
-   */
   canActivate(context: ExecutionContext): boolean {
-    const requiredRoles = this.reflector.getAllAndOverride<string[]>(
-      ROLES_METADATA_KEY,
-      [context.getHandler(), context.getClass()],
-    );
+    const requiredRoles = this.reflector.getAllAndOverride<string[]>(ROLES_KEY, [
+      context.getHandler(),
+      context.getClass(),
+    ]);
+
+    // Agar route pe @Roles() lagaya hi nahi gaya, sab allow (no restriction)
     if (!requiredRoles || requiredRoles.length === 0) {
       return true;
     }
-    const { user } = context.switchToHttp().getRequest<{ user?: { role?: string } }>();
-    const allowed = requiredRoles.some((role) => user?.role === role);
-    if (!allowed) {
-      throw new ForbiddenException(AuthMessages.FORBIDDEN_ROLE);
+
+    const request = context.switchToHttp().getRequest();
+    const user = request.user; // JwtAuthGuard se already attach hota hai (JWT payload)
+
+    if (!user) {
+      throw new ForbiddenException('Access denied');
     }
+
+    const hasRole = requiredRoles.includes(user.role);
+
+    if (!hasRole) {
+      throw new ForbiddenException(
+        `Access denied. Required role: ${requiredRoles.join(' or ')}`,
+      );
+    }
+
     return true;
   }
 }
