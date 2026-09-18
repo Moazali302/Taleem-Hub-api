@@ -2,9 +2,12 @@ name: Backend CI
 
 on:
   push:
-    branches: ['main,develop']
+    branches: [main, develop]
   pull_request:
-    branches: ['main,develop']
+    branches: [main, develop]
+
+permissions:
+  contents: read
 
 concurrency:
   group: backend-ci-${{ github.workflow }}-${{ github.event.pull_request.number || github.ref }}
@@ -32,7 +35,7 @@ jobs:
       - name: Setup Node.js
         uses: actions/setup-node@v4
         with:
-          node-version: '20'
+          node-version: '22'
 
       - name: Install dependencies
         run: npm ci
@@ -45,3 +48,6 @@ jobs:
 
       - name: Build
         run: npm run build
+
+      - name: Docker build check
+        run: docker build -t taleem-hub-api .
