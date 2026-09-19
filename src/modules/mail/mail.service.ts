@@ -15,22 +15,28 @@ export class MailService {
   private readonly transporter: nodemailer.Transporter;
 
   constructor(private readonly configService: ConfigService) {
-    this.transporter = nodemailer.createTransport({
-      service: 'gmail',
-      auth: {
-        user: this.configService.getOrThrow<string>('MAIL_USER'),
-        pass: this.configService.getOrThrow<string>('MAIL_PASS'),
-      },
-    });
-  }
+  this.transporter = nodemailer.createTransport({
+    host: this.configService.getOrThrow<string>('MAIL_HOST'),
+    port: Number(this.configService.getOrThrow<string>('MAIL_PORT')),
+    secure: false,
+    requireTLS: true,
+    auth: {
+      user: this.configService.getOrThrow<string>('MAIL_USER'),
+      pass: this.configService.getOrThrow<string>('MAIL_PASS'),
+    },
+    connectionTimeout: 10000,
+    greetingTimeout: 10000,
+    socketTimeout: 15000,
+  });
+}
 
   /**
    * Builds the RFC5322 From header with display name and configured SMTP mailbox.
    */
   private getFromHeader(): string {
-    const user = this.configService.getOrThrow<string>('MAIL_USER');
-    return `"${MailBranding.FROM_DISPLAY_NAME}" <${user}>`;
-  }
+  const from = this.configService.getOrThrow<string>('MAIL_FROM');
+  return `"${MailBranding.FROM_DISPLAY_NAME}" <${from}>`;
+}
 
   /**
    * Applies the shared Taleem Hub HTML layout (header, typography, footer) around inner content.
