@@ -11,7 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import * as bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
-import { Request, Response } from 'express';
+import { CookieOptions,Request, Response } from 'express';
 import { Repository } from 'typeorm';
 
 import { User } from '../../database/entities/user.entity';
@@ -260,21 +260,14 @@ export class AuthService {
     };
   }
 
-  logout(res: Response): { success: boolean; message: string } {
-    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+    logout(res: Response): { success: boolean; message: string } {
+  res.clearCookie(TALEEM_TOKEN_COOKIE, this.getAuthCookieOptions());
 
-    res.clearCookie(TALEEM_TOKEN_COOKIE, {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: isProd,
-    });
-
-    return {
-      success: true,
-      message: AuthMessages.LOGOUT_SUCCESS,
-    };
-  }
+  return {
+    success: true,
+    message: AuthMessages.LOGOUT_SUCCESS,
+  };
+}
 
   // --- Shared helpers ---
 
@@ -353,16 +346,11 @@ export class AuthService {
   }
 
   private setAuthCookie(res: Response, token: string): void {
-    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
-
-    res.cookie(TALEEM_TOKEN_COOKIE, token, {
-      httpOnly: true,
-      maxAge: JWT_COOKIE_MAX_AGE_HOURS * 60 * 60 * 1000,
-      sameSite: 'strict',
-      secure: isProd,
-      path: '/',
-    });
-  }
+  res.cookie(TALEEM_TOKEN_COOKIE, token, {
+    ...this.getAuthCookieOptions(),
+    maxAge: JWT_COOKIE_MAX_AGE_HOURS * 60 * 60 * 1000,
+  });
+}
 
   private signUserAccessToken(user: User): string {
     const isSuperadmin = user.role === SchoolRoleEnum.SUPERADMIN;
@@ -389,4 +377,14 @@ export class AuthService {
   private generateSixDigitOtp(): string {
     return randomInt(100000, 1000000).toString();
   }
+   private getAuthCookieOptions(): CookieOptions {
+  const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+
+  return {
+    httpOnly: true,
+    sameSite: isProd ? 'none' : 'strict',
+    secure: isProd,
+    path: '/',
+  };
+}
 }
