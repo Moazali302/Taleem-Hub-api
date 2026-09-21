@@ -7,8 +7,16 @@ export const BCRYPT_SALT_ROUNDS = 10;
 /** OTP validity window in minutes (login and password reset). */
 export const OTP_EXPIRY_MINUTES = 5;
 
-/** JWT access token max age in hours (must align with JWT_EXPIRY). */
+/** JWT session cookie (httpOnly) max age in hours — this is the "stay logged
+ *  in" window; the access token returned in the response body is much
+ *  shorter-lived (see ACCESS_TOKEN_EXPIRY below) so a stolen localStorage
+ *  token has a small blast radius even though the session itself lasts longer. */
 export const JWT_COOKIE_MAX_AGE_HOURS = 24;
+
+/** Short-lived access token (Authorization header / frontend storage).
+ *  Kept intentionally short — the frontend silently mints a new one via
+ *  POST /auth/refresh-token using the httpOnly session cookie above. */
+export const ACCESS_TOKEN_EXPIRY = '1m';
 
 /** Metadata key for @Roles() decorator (RolesGuard). */
 export const ROLES_METADATA_KEY = 'roles';
@@ -47,7 +55,7 @@ export const ROLE_DASHBOARD_PATHS: Record<SchoolRoleValue, string> = {
   [SchoolRoleEnum.SUPERADMIN]: '/super-admin/dashboard',
   [SchoolRoleEnum.ADMIN]: '/admin/dashboard',
   [SchoolRoleEnum.TEACHER]: '/teacher/dashboard',
-  [SchoolRoleEnum.STUDENT]: '/student/dashboard',
+  [SchoolRoleEnum.STUDENT]: '/parent/dashboard',
 };
 
 export const AuthMessages = {
@@ -78,6 +86,7 @@ export const AuthMessages = {
   FORBIDDEN_ROLE: 'You do not have permission to access this resource',
   TENANT_MISMATCH:
     'School identifier does not match the authenticated session',
+  SESSION_EXPIRED: 'Session expired, please log in again',
 } as const;
 
 export const MailSubjects = {

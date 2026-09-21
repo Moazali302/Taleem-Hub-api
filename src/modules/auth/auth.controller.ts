@@ -95,4 +95,18 @@ export class AuthController {
   async logout(@Res({ passthrough: true }) res: Response) {
     return this.authService.logout(res);
   }
+
+  @SkipThrottle()
+  @Post('refresh-token')
+  @HttpCode(HttpStatus.OK)
+  @ApiOperation({
+    summary: 'Issue a new short-lived access token using the httpOnly session cookie',
+  })
+  @ApiResponse({ status: 200 })
+  async refreshToken(
+    @Req() req: Request,
+    @Res({ passthrough: true }) res: Response,
+  ) {
+    return this.authService.refreshToken(req, res);
+  }
 }

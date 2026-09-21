@@ -11,7 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import * as bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
-import { CookieOptions,Request, Response } from 'express';
+import { Request, Response } from 'express';
 import { Repository } from 'typeorm';
 
 import { User } from '../../database/entities/user.entity';
@@ -20,6 +20,7 @@ import {
   AuthMessages,
   BCRYPT_SALT_ROUNDS,
   JWT_COOKIE_MAX_AGE_HOURS,
+  ACCESS_TOKEN_EXPIRY,
   OTP_EXPIRY_MINUTES,
   ROLE_DASHBOARD_PATHS,
   SchoolRoleEnum,
@@ -152,7 +153,7 @@ export class AuthService {
     await this.userRepository.save(user);
 
     const token = this.signUserAccessToken(user);
-    this.setAuthCookie(res, token);
+    this.setAuthCookie(res, this.signSessionToken(user));
 
     return {
       success: true,
@@ -260,14 +261,60 @@ export class AuthService {
     };
   }
 
-    logout(res: Response): { success: boolean; message: string } {
-  res.clearCookie(TALEEM_TOKEN_COOKIE, this.getAuthCookieOptions());
+  logout(res: Response): { success: boolean; message: string } {
+    this.clearAuthCookie(res);
 
-  return {
-    success: true,
-    message: AuthMessages.LOGOUT_SUCCESS,
-  };
-}
+    return {
+      success: true,
+      message: AuthMessages.LOGOUT_SUCCESS,
+    };
+  }
+
+  private clearAuthCookie(res: Response): void {
+    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+
+    res.clearCookie(TALEEM_TOKEN_COOKIE, {
+      path: '/',
+      httpOnly: true,
+      sameSite: 'strict',
+      secure: isProd,
+    });
+  }
+  async refreshToken(
+    req: Request,
+    res: Response,
+  ): Promise<{ success: boolean; token: string; role: SchoolRoleValue }> {
+    const cookieToken = req.cookies?.[TALEEM_TOKEN_COOKIE] as string | undefined;
+
+    if (!cookieToken) {
+      throw new UnauthorizedException(AuthMessages.SESSION_EXPIRED);
+    }
+
+    let payload: TaleemJwtPayload;
+    try {
+      const secret = this.configService.getOrThrow<string>('JWT_SECRET');
+      payload = this.jwtService.verify<TaleemJwtPayload>(cookieToken, { secret });
+    } catch {
+      this.clearAuthCookie(res);
+      throw new UnauthorizedException(AuthMessages.SESSION_EXPIRED);
+    }
+
+    const user = await this.userRepository.findOne({
+      where: { email: payload.email },
+      relations: ['school'],
+    });
+
+    if (!user || !user.is_active) {
+      this.clearAuthCookie(res);
+      throw new UnauthorizedException(AuthMessages.SESSION_EXPIRED);
+    }
+
+    return {
+      success: true,
+      token: this.signUserAccessToken(user),
+      role: user.role as SchoolRoleValue,
+    };
+  }
 
   // --- Shared helpers ---
 
@@ -333,7 +380,7 @@ export class AuthService {
       if (payload.email === email && payload.role === user.role) {
         return {
           success: true,
-          token: cookieToken,
+          token: this.signUserAccessToken(user), // fresh short-lived token — never hand back the long-lived session token itself
           role: user.role as SchoolRoleValue,
           redirectTo: this.buildDashboardUrl(user.role as SchoolRoleValue),
         };
@@ -346,23 +393,37 @@ export class AuthService {
   }
 
   private setAuthCookie(res: Response, token: string): void {
-  res.cookie(TALEEM_TOKEN_COOKIE, token, {
-    ...this.getAuthCookieOptions(),
-    maxAge: JWT_COOKIE_MAX_AGE_HOURS * 60 * 60 * 1000,
-  });
-}
+    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+
+    res.cookie(TALEEM_TOKEN_COOKIE, token, {
+      httpOnly: true,
+      maxAge: JWT_COOKIE_MAX_AGE_HOURS * 60 * 60 * 1000,
+      sameSite: 'strict',
+      secure: isProd,
+      path: '/',
+    });
+  }
 
   private signUserAccessToken(user: User): string {
+    return this.jwtService.sign(this.buildPayload(user) as object, {
+      expiresIn: ACCESS_TOKEN_EXPIRY,
+    });
+  }
+  private signSessionToken(user: User): string {
+    return this.jwtService.sign(this.buildPayload(user) as object, {
+      expiresIn: `${JWT_COOKIE_MAX_AGE_HOURS}h`,
+    });
+  }
+
+  private buildPayload(user: User): TaleemJwtPayload {
     const isSuperadmin = user.role === SchoolRoleEnum.SUPERADMIN;
 
-    const payload: TaleemJwtPayload = {
+    return {
       sub: user.id.toString(),
       email: user.email,
       role: user.role as SchoolRoleValue,
       schoolId: isSuperadmin ? '' : (user.school?.school_id ?? ''),
     };
-
-    return this.jwtService.sign(payload as object);
   }
 
   private buildDashboardUrl(role: SchoolRoleValue): string {
@@ -377,14 +438,4 @@ export class AuthService {
   private generateSixDigitOtp(): string {
     return randomInt(100000, 1000000).toString();
   }
-   private getAuthCookieOptions(): CookieOptions {
-  const isProd = this.configService.get<string>('NODE_ENV') === 'production';
-
-  return {
-    httpOnly: true,
-    sameSite: isProd ? 'none' : 'strict',
-    secure: isProd,
-    path: '/',
-  };
-}
 }
