@@ -11,7 +11,7 @@ import { InjectRepository } from '@nestjs/typeorm';
 
 import * as bcrypt from 'bcrypt';
 import { randomInt } from 'crypto';
-import { Request, Response } from 'express';
+import { Request, Response,CookieOptions } from 'express';
 import { Repository } from 'typeorm';
 
 import { User } from '../../database/entities/user.entity';
@@ -271,15 +271,20 @@ export class AuthService {
   }
 
   private clearAuthCookie(res: Response): void {
-    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+  res.clearCookie(TALEEM_TOKEN_COOKIE, this.buildAuthCookieOptions());
+}
 
-    res.clearCookie(TALEEM_TOKEN_COOKIE, {
-      path: '/',
-      httpOnly: true,
-      sameSite: 'strict',
-      secure: isProd,
-    });
-  }
+private buildAuthCookieOptions(maxAge?: number): CookieOptions {
+  const isProd = this.configService.get<string>('NODE_ENV') === 'production';
+
+  return {
+    httpOnly: true,
+    path: '/',
+    sameSite: isProd ? 'none' : 'strict',
+    secure: isProd,
+    ...(maxAge !== undefined && { maxAge }),
+  };
+}
   async refreshToken(
     req: Request,
     res: Response,
@@ -393,16 +398,12 @@ export class AuthService {
   }
 
   private setAuthCookie(res: Response, token: string): void {
-    const isProd = this.configService.get<string>('NODE_ENV') === 'production';
-
-    res.cookie(TALEEM_TOKEN_COOKIE, token, {
-      httpOnly: true,
-      maxAge: JWT_COOKIE_MAX_AGE_HOURS * 60 * 60 * 1000,
-      sameSite: 'strict',
-      secure: isProd,
-      path: '/',
-    });
-  }
+  res.cookie(
+    TALEEM_TOKEN_COOKIE,
+    token,
+    this.buildAuthCookieOptions(JWT_COOKIE_MAX_AGE_HOURS * 60 * 60 * 1000),
+  );
+}
 
   private signUserAccessToken(user: User): string {
     return this.jwtService.sign(this.buildPayload(user) as object, {

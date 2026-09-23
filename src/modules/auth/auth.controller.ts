@@ -6,6 +6,7 @@ import {
   Post,
   Req,
   Res,
+  UseGuards,
 } from '@nestjs/common';
 import {
   ApiBearerAuth,
@@ -20,14 +21,15 @@ import { LoginDto } from './dto/login.dto';
 import { VerifyOtpDto } from './dto/verify-otp.dto';
 import { ForgotPasswordDto } from './dto/forgot-password.dto';
 import { ResetPasswordDto } from './dto/reset-password.dto';
-import { SkipThrottle, Throttle } from '@nestjs/throttler';
+import { SkipThrottle, Throttle, ThrottlerGuard } from '@nestjs/throttler';
 
 @ApiTags('auth')
 @Controller('auth')
+@UseGuards(ThrottlerGuard)
 export class AuthController {
   constructor(private readonly authService: AuthService) {}
 
-  @SkipThrottle()
+  @Throttle({ otpVerify: { limit: 5, ttl: 5 * 60 * 1000 } })
   @Post('verify-reset-otp')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Verify OTP before resetting password' })
@@ -47,7 +49,7 @@ export class AuthController {
     return this.authService.login(loginDto, req);
   }
 
-  @SkipThrottle()
+  @Throttle({ otpVerify: { limit: 5, ttl: 5 * 60 * 1000 } })
   @Post('verify-otp')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({
@@ -68,7 +70,7 @@ export class AuthController {
     return this.authService.resendOtp(dto);
   }
 
-  @SkipThrottle()
+  @Throttle({ passwordReset: { limit: 5, ttl: 15 * 60 * 1000 } })
   @Post('forgot-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Request password reset link with OTP' })
@@ -77,7 +79,7 @@ export class AuthController {
     return this.authService.forgotPassword(forgotPasswordDto);
   }
 
-  @SkipThrottle()
+  @Throttle({ passwordReset: { limit: 5, ttl: 15 * 60 * 1000 } })
   @Post('reset-password')
   @HttpCode(HttpStatus.OK)
   @ApiOperation({ summary: 'Reset password using email and OTP' })
