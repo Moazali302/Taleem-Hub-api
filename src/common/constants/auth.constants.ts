@@ -1,26 +1,20 @@
-/** Cookie name for JWT access token (HTTP-only). */
 export const TALEEM_TOKEN_COOKIE = 'taleem_token';
 
-/** Bcrypt salt rounds for password hashing. */
 export const BCRYPT_SALT_ROUNDS = 10;
 
-/** OTP validity window in minutes (login and password reset). */
 export const OTP_EXPIRY_MINUTES = 5;
 
-/** JWT access token max age in hours (must align with JWT_EXPIRY). */
-export const JWT_COOKIE_MAX_AGE_HOURS =Number(process.env.JWT_COOKIE_MAX_AGE_HOURS) || 24;
+export const JWT_COOKIE_MAX_AGE_HOURS = 24;
 
-/** Metadata key for @Roles() decorator (RolesGuard). */
+export const ACCESS_TOKEN_EXPIRY = '1m';
+
 export const ROLES_METADATA_KEY = 'roles';
 
-/** Pakistan mobile: +92 followed by exactly 10 digits. */
 export const PAKISTAN_PHONE_REGEX = /^\+92[0-9]{10}$/;
 
-/** Strong password for reset: min 8, upper, lower, digit. */
 export const STRONG_PASSWORD_REGEX =
   /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d).{8,}$/;
 
-/** School business ID pattern: TH-{year}- + 4 alphanumeric. */
 export const SCHOOL_ID_RANDOM_ALPHABET =
   'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789';
 
@@ -42,7 +36,6 @@ export const SchoolStatusEnum = {
 export type SchoolStatusValue =
   (typeof SchoolStatusEnum)[keyof typeof SchoolStatusEnum];
 
-/** Frontend dashboard paths by role (appended to FRONTEND_URL). */
 export const ROLE_DASHBOARD_PATHS: Record<SchoolRoleValue, string> = {
   [SchoolRoleEnum.SUPERADMIN]: '/super-admin/dashboard',
   [SchoolRoleEnum.ADMIN]: '/admin/dashboard',
